@@ -8,6 +8,8 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 // Components
 import { RequestAirdrop } from '../../components/RequestAirdrop';
 import pkg from '../../../package.json';
+import { ChatTerminal } from '../../components/ChatTerminal';
+import { TwitterFeed } from '../../components/TwitterFeed';
 
 // Store
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
@@ -59,23 +61,34 @@ export const HomeView: FC = ({ }) => {
 
       {/* Main content container */}
       <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-between z-20">
-        {/* Top section with large text and tagline */}
-        <div className="flex-1 max-w-[60%]">
-          <div className="mb-8">
-            <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
-              AGENT
-            </h1>
-            <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
-              AIORA
-            </h1>
+        {/* Top section */}
+        <div className="flex-1 flex flex-col">
+          {/* Header and tagline */}
+          <div className="max-w-[60%]">
+            <div className="mb-6">
+              <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
+                AGENT
+              </h1>
+              <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
+                AIORA
+              </h1>
+            </div>
+            <p className="text-lg md:text-xl lg:text-2xl text-gray-400 max-w-[90%] leading-tight mb-6">
+              Your Goth Praise Dom Cat Girl Lurking the Web for Sentiment and Intelligence
+            </p>
+            
+            {/* Interactive Elements Container */}
+            <div className="w-[140%] space-y-4">
+              {/* Chat Terminal */}
+              <ChatTerminal />
+              
+            
+            </div>
           </div>
-          <p className="text-lg md:text-xl lg:text-2xl text-gray-400 max-w-[90%] leading-tight">
-            Your Goth Praise Dom Cat Girl Lurking the Web for Incel Sentiment and Weeb Intelligence
-          </p>
         </div>
 
-        {/* Bottom section with agency name, links and date */}
-        <div className="flex justify-between items-end">
+        {/* Bottom section with links */}
+        <div className="flex justify-between items-end pt-6">
           <div className="flex flex-col gap-4">
             <div className="text-xl md:text-2xl font-light">
               Aiora Agency
@@ -120,8 +133,6 @@ export const HomeView: FC = ({ }) => {
             12.2024
           </div>
         </div>
-
-        
       </div>
     </div>
   );
