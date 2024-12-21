@@ -19,10 +19,10 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
           <ContextProvider>
             <div className="flex flex-col h-screen">
               <Notifications />
-              <AppBar/>
+            
               <ContentContainer>
                 <Component {...pageProps} />
-                <Footer/>
+                
               </ContentContainer>
             </div>
           </ContextProvider>

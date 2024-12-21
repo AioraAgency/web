@@ -3,7 +3,24 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "media",
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        shimmer: {
+          '0%': {
+            backgroundPosition: '200% 0',
+          },
+          '100%': {
+            backgroundPosition: '-200% 0',
+          },
+        }
+      },
+      animation: {
+        shimmer: 'shimmer 8s ease-in-out infinite',
+      },
+      backgroundImage: {
+        'shimmer': 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+      },
+    },
   },
   plugins: [
     require('daisyui'),

@@ -27,42 +27,101 @@ export const HomeView: FC = ({ }) => {
   }, [wallet.publicKey, connection, getUserSOLBalance])
 
   return (
+    <div className="relative w-screen h-screen bg-black text-white overflow-hidden">
+      {/* Silhouette with gradient overlay and shimmer */}
+      <div className="absolute right-0 top-0 h-full w-1/2">
+        <div 
+          className="absolute inset-0 bg-gradient-to-l from-transparent to-black z-10"
+        />
+        <div 
+          className="absolute inset-0 animate-shimmer"
+          style={{
+            backgroundImage: `url('/anime-character.png')`,
+            backgroundPosition: 'right center',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            opacity: '0.95',
+            filter: 'contrast(1.2) brightness(0.8)',
+            maskImage: 'linear-gradient(to right, transparent, black)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black)',
+          }}
+        />
+        {/* Shimmer overlay */}
+        <div 
+          className="absolute inset-0 bg-shimmer animate-shimmer"
+          style={{
+            backgroundSize: '200% 100%',
+            opacity: '0.60',
+            zIndex: 11,
+          }}
+        />
+      </div>
 
-    <div className="md:hero mx-auto p-4">
-      <div className="md:hero-content flex flex-col">
-        <div className='mt-6'>
-        <div className='text-sm font-normal align-bottom text-right text-slate-600 mt-4'>v{pkg.version}</div>
-        <h1 className="text-center text-5xl md:pl-12 font-bold text-transparent bg-clip-text bg-gradient-to-br from-indigo-500 to-fuchsia-500 mb-4">
-          Solana Next
-        </h1>
+      {/* Main content container */}
+      <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-between z-20">
+        {/* Top section with large text and tagline */}
+        <div className="flex-1 max-w-[60%]">
+          <div className="mb-8">
+            <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
+              AGENT
+            </h1>
+            <h1 className="text-[20vw] md:text-[15vw] leading-[0.8] font-bold tracking-tighter">
+              AIORA
+            </h1>
+          </div>
+          <p className="text-lg md:text-xl lg:text-2xl text-gray-400 max-w-[90%] leading-tight">
+            Your Goth Praise Dom Cat Girl Lurking the Web for Incel Sentiment and Weeb Intelligence
+          </p>
         </div>
-        <h4 className="md:w-full text-2x1 md:text-4xl text-center text-slate-300 my-2">
-          <p>Unleash the full power of blockchain with Solana and Next.js 13.</p>
-          <p className='text-slate-500 text-2x1 leading-relaxed'>Full-stack Solana applications made easy.</p>
-        </h4>
-        <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-indigo-500 rounded-lg blur opacity-40 animate-tilt"></div>
-          <div className="max-w-md mx-auto mockup-code bg-primary border-2 border-[#5252529f] p-6 px-10 my-2">
-            <pre data-prefix=">">
-              <code className="truncate">{`npx create-solana-dapp <dapp-name>`} </code>
-            </pre>
+
+        {/* Bottom section with agency name, links and date */}
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-4">
+            <div className="text-xl md:text-2xl font-light">
+              Aiora Agency
+            </div>
+            {/* Social Links */}
+            <div className="flex flex-wrap gap-6 text-sm md:text-base text-gray-400">
+              <Link 
+                href="https://x.com/AioraAI" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                X
+              </Link>
+              <Link 
+                href="https://t.me/AioraAI" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                Telegram
+              </Link>
+              <Link 
+                href="https://discord.gg/6YnpXNBSRs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                Discord
+              </Link>
+              <Link 
+                href="https://dexscreener.com/solana/4ihrulj7phhvsovtvu3ttaxawtnfpszgdfrmr7b6myfz" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                Chart
+              </Link>
+            </div>
+          </div>
+          <div className="border border-white rounded-full px-6 py-3 md:px-8 md:py-4 text-lg md:text-2xl">
+            12.2024
           </div>
         </div>
-        <div className="flex flex-col mt-2">
-          <RequestAirdrop />
-          <h4 className="md:w-full text-2xl text-slate-300 my-2">
-          {wallet &&
-          <div className="flex flex-row justify-center">
-            <div>
-              {(balance || 0).toLocaleString()}
-              </div>
-              <div className='text-slate-600 ml-2'>
-                SOL
-              </div>
-          </div>
-          }
-          </h4>
-        </div>
+
+        
       </div>
     </div>
   );
