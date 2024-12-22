@@ -1,64 +1,32 @@
-import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import {
-    UnsafeBurnerWalletAdapter
-} from '@solana/wallet-adapter-wallets';
-import { Cluster, clusterApiUrl } from '@solana/web3.js';
-import { FC, ReactNode, useCallback, useMemo } from 'react';
-import { AutoConnectProvider, useAutoConnect } from './AutoConnectProvider';
-import { notify } from "../utils/notifications";
-import { NetworkConfigurationProvider, useNetworkConfiguration } from './NetworkConfigurationProvider';
-import dynamic from "next/dynamic";
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { Connection } from '@solana/web3.js';
+import { FC, ReactNode, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 
-const ReactUIWalletModalProviderDynamic = dynamic(
-  async () =>
-    (await import("@solana/wallet-adapter-react-ui")).WalletModalProvider,
+// Create a dynamic version of wallet components to prevent hydration errors
+const WalletProviderDynamic = dynamic(
+  () => import('@solana/wallet-adapter-react').then(mod => mod.WalletProvider),
   { ssr: false }
 );
 
-const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
-    const { autoConnect } = useAutoConnect();
-    const { networkConfiguration } = useNetworkConfiguration();
-    const network = networkConfiguration as WalletAdapterNetwork;
-    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
-    console.log(network);
-
-    const wallets = useMemo(
-        () => [
-            new UnsafeBurnerWalletAdapter(),
-        ],
-        [network]
-    );
-
-    const onError = useCallback(
-        (error: WalletError) => {
-            notify({ type: 'error', message: error.message ? `${error.name}: ${error.message}` : error.name });
-            console.error(error);
-        },
-        []
-    );
-
-    return (
-        // TODO: updates needed for updating and referencing endpoint: wallet adapter rework
-        <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets} onError={onError} autoConnect={autoConnect}>
-                <ReactUIWalletModalProviderDynamic>
-                    {children}
-                </ReactUIWalletModalProviderDynamic>
-			</WalletProvider>
-        </ConnectionProvider>
-    );
-};
+const WalletModalProviderDynamic = dynamic(
+  () => import('@solana/wallet-adapter-react-ui').then(mod => mod.WalletModalProvider),
+  { ssr: false }
+);
 
 export const ContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
+    const endpoint = `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_RPC}`;
+    
+    const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+
     return (
-        <>
-            <NetworkConfigurationProvider>
-                <AutoConnectProvider>
-                    <WalletContextProvider>{children}</WalletContextProvider>
-                </AutoConnectProvider>
-            </NetworkConfigurationProvider>
-        </>
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProviderDynamic wallets={wallets} autoConnect>
+                <WalletModalProviderDynamic>{children}</WalletModalProviderDynamic>
+            </WalletProviderDynamic>
+        </ConnectionProvider>
     );
 };
