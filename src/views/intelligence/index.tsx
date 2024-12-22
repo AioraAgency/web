@@ -1,5 +1,7 @@
 import { FC } from "react";
+import Link from "next/link";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
 import { ChatTerminal } from '../../components/ChatTerminal';
 
@@ -21,23 +23,19 @@ export const IntelligenceView: FC = ({ }) => {
         >
           <source src="/aiora_space.mp4" type="video/mp4" />
         </video>
-        {/* Vignette Overlay */}
         <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/50 to-black pointer-events-none" />
       </div>
 
       {/* Content Container */}
       <div className="relative z-10 h-screen overflow-y-auto">
-        {/* Header Section - Fixed */}
+        {/* Header Section */}
         <div className="sticky top-0 z-50 bg-black/50 backdrop-blur-sm border-b border-white/10 p-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-bold">AIORA Intel</h1>
-            <div className="flex items-center space-x-4 text-sm text-gray-400">
-              <div className="hidden md:block">
-                {wallet.publicKey ? 
-                  `${wallet.publicKey.toBase58().slice(0, 4)}...${wallet.publicKey.toBase58().slice(-4)}` 
-                  : 'Not Connected'}
-              </div>
-              {balance && <div>{balance} SOL</div>}
+            <Link href="/">
+              <h1 className="text-2xl md:text-3xl font-bold cursor-pointer hover:text-purple-400 transition-colors">AIORA Intel</h1>
+            </Link>
+            <div className="flex items-center space-x-4 text-sm">
+              <WalletMultiButton className="bg-purple-500/20 hover:bg-purple-500/30 transition-colors" />
             </div>
           </div>
         </div>
