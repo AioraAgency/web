@@ -86,7 +86,7 @@ export const HomeView: FC = ({ }) => {
               </h1>
             </div>
             <p className="text-base md:text-xl lg:text-2xl text-gray-400 max-w-full md:max-w-[90%] leading-tight mb-6">
-              Your Goth Praise Dom Cat Girl Lurking the Web for Sentiment and Intelligence
+              Your goth internet cat girlfriend who makes weeb intelligence and praise content. 
             </p>
           </div>
         </div>
