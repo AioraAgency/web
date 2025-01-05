@@ -148,7 +148,7 @@ export const HomeView: FC = ({ }) => {
               </div>
             </Link>
             <Link href="/image-gen" className="w-full md:w-auto">
-              <div className="border border-white rounded-full px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 text-base md:text-lg lg:text-2xl hover:bg-white/10 transition-colors cursor-pointer text-center">
+              <div className="border border-white rounded-full px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 text-base md:text-lg lg:text-2xl hover:bg-white/10 transition-colors cursor-pointer text-center whitespace-nowrap">
                 Image Gen
               </div>
             </Link>
