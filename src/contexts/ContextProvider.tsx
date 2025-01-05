@@ -1,7 +1,17 @@
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
+import {
+    PhantomWalletAdapter,
+    SolflareWalletAdapter,
+    CoinbaseWalletAdapter,
+    TorusWalletAdapter,
+    LedgerWalletAdapter,
+    CloverWalletAdapter,
+    Coin98WalletAdapter,
+    SafePalWalletAdapter,
+    AvanaWalletAdapter
+} from '@solana/wallet-adapter-wallets';
 import { Connection } from '@solana/web3.js';
 import { FC, ReactNode, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -20,7 +30,17 @@ const WalletModalProviderDynamic = dynamic(
 export const ContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const endpoint = `https://mainnet.helius-rpc.com/?api-key=${process.env.NEXT_PUBLIC_HELIUS_RPC}`;
     
-    const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+    const wallets = useMemo(() => [
+        new PhantomWalletAdapter(),
+        new SolflareWalletAdapter(),
+        new CoinbaseWalletAdapter(),
+        new TorusWalletAdapter(),
+        new LedgerWalletAdapter(),
+        new CloverWalletAdapter(),
+        new Coin98WalletAdapter(),
+        new SafePalWalletAdapter(),
+        new AvanaWalletAdapter()
+    ], []);
 
     return (
         <ConnectionProvider endpoint={endpoint}>
