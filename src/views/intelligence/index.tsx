@@ -5,7 +5,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
-import { ChatTerminal } from '../../components/ChatTerminal';
+// import { ChatTerminal } from '../../components/ChatTerminal';
 import { AgentSelector, Agent } from '../../components/AgentSelector';
 import { AgentIntelligence } from '../../components/AgentIntelligence';
 import { TokenPrice } from '../../components/TokenPrice';
@@ -22,7 +22,7 @@ export const IntelligenceView: FC = ({ }) => {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
 
   // Fetch agents from API
   useEffect(() => {
@@ -164,11 +164,11 @@ export const IntelligenceView: FC = ({ }) => {
         </div>
 
         {/* Fixed Chat Terminal - only show if has access */}
-        {hasAccess && (
+        {/* {hasAccess && (
           <div className="fixed bottom-4 right-4 w-80 z-50">
             <ChatTerminal />
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
