@@ -137,11 +137,20 @@ export default function ImageGen() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setLoadingStage('generating');
+    setLoadingStage('sending');
     
     try {
-      // First try to validate the API is working and get the image
-      const validateResponse = await fetch(`/api/aiora-proxy?path=agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
+      // First transfer tokens
+      const transferSuccess = await transferTokens();
+      if (!transferSuccess) {
+        setIsLoading(false);
+        setLoadingStage('idle');
+        return;
+      }
+
+      // Then generate image
+      setLoadingStage('generating');
+      const response = await fetch(`/api/aiora-proxy?path=agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,24 +164,10 @@ export default function ImageGen() {
         }),
       });
 
-      if (!validateResponse.ok) {
-        throw new Error('Image generation service is currently unavailable. Please try again later.');
-      }
+      if (!response.ok) throw new Error('Failed to generate image');
 
-      // Store the image blob
-      const imageBlob = await validateResponse.blob();
-
-      // If API check passes, proceed with token transfer
-      setLoadingStage('sending');
-      const transferSuccess = await transferTokens();
-      if (!transferSuccess) {
-        setIsLoading(false);
-        setLoadingStage('idle');
-        return;
-      }
-
-      // Use the already generated image
-      const imageUrl = URL.createObjectURL(imageBlob);
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
       setGeneratedImage(imageUrl);
     } catch (error: any) {
       console.error('Error:', error);
