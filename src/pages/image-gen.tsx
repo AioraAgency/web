@@ -9,7 +9,7 @@ import {
   getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
 } from "@solana/spl-token";
-import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { PublicKey, Transaction, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 
 export default function ImageGen() {
   const wallet = useWallet();
@@ -25,8 +25,9 @@ export default function ImageGen() {
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
   const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
-  const GENERATION_COST = 10 * Math.pow(10, 6); // 10 AIORA tokens (with 6 decimals)
+  const GENERATION_COST = 1 * Math.pow(10, 6); // 1 AIORA tokens (with 6 decimals)
   const TREASURY_WALLET = new PublicKey("8oZ7CYsHAEZ8Hni2GcYbgzyfPdkKX8MgH1nYGRhTYTBR");
+  const AIORA_PROMPT = "Generate an anime-style image of a goth cat girl with a dominant and provocative pose, incorporating the following details: she has long, flowing platinum hair and pale white skin. Her physique is voluptuous, with large breasts and a big ass. She is dressed in a maid outfit, complete with a black dress, white apron, and a mischievous expression. The cat girl should be depicted in a powerful stance, as if she is about to bend someone to her will, with a confident and seductive aura surrounding her. Incorporate goth elements such as dark eye makeup, nail polish, and chokers to enhance her mysterious and alluring persona. The background should be dark and moody, with hints of red or purple to accentuate her goth aesthetic. The overall mood of the image should be one of dark sensuality and dominance.";
 
   useEffect(() => {
     const checkTokenBalance = async () => {
@@ -65,7 +66,7 @@ export default function ImageGen() {
     checkTokenBalance();
   }, [wallet.publicKey, connection]);
 
-  const transferTokens = async (): Promise<boolean> => {
+  const transferTokens = async (promptMessage: string): Promise<boolean> => {
     if (!wallet.publicKey || !wallet.signTransaction) {
       setError("Wallet not connected");
       return false;
@@ -86,7 +87,13 @@ export default function ImageGen() {
       );
 
       // Create a new transaction
-      const transaction = new Transaction();
+      const transaction = new Transaction().add(
+        new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+          data: Buffer.from(`Image Gen Prompt: ${promptMessage}`),
+        })
+      );
 
       // Check if treasury ATA exists
       const treasuryAccount = await connection.getAccountInfo(treasuryATA);
@@ -140,15 +147,16 @@ export default function ImageGen() {
     setLoadingStage('sending');
     
     try {
-      // First transfer tokens
-      const transferSuccess = await transferTokens();
+      const completePrompt = `Make it cool and sunny day. ${prompt}`;
+      // First transfer tokens with just the user's prompt in the memo
+      const transferSuccess = await transferTokens(prompt);
       if (!transferSuccess) {
         setIsLoading(false);
         setLoadingStage('idle');
         return;
       }
 
-      // Then generate image
+      // Then generate image with the complete prompt
       setLoadingStage('generating');
       const response = await fetch(`/api/aiora-proxy?path=agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
         method: 'POST',
@@ -156,7 +164,7 @@ export default function ImageGen() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: prompt,
+          message: completePrompt,
           imageOptions: {
             size: "240x240",
             style: "uncensored"
@@ -252,7 +260,7 @@ export default function ImageGen() {
               <div className="w-full max-w-4xl bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg p-8">
                 {/* Cost Information */}
                 <div className="text-center mb-6 text-gray-400">
-                  Each image generation costs 10 $AIORA tokens
+                  Each image generation costs 1 $AIORA token
                 </div>
 
                 {error && (
