@@ -22,7 +22,7 @@ export const IntelligenceView: FC = ({ }) => {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
 
   // Fetch agents from API
   useEffect(() => {

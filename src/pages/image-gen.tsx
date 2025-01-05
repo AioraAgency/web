@@ -1,12 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 
 export default function ImageGen() {
+  const wallet = useWallet();
+  const { connection } = useConnection();
   const [prompt, setPrompt] = useState('');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [isLoadingAccess, setIsLoadingAccess] = useState(true);
+
+  // AIORA token mint address
+  const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
+  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+
+  useEffect(() => {
+    const checkTokenBalance = async () => {
+      if (!wallet.publicKey) {
+        setHasAccess(false);
+        setIsLoadingAccess(false);
+        return;
+      }
+
+      try {
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+          wallet.publicKey,
+          { programId: TOKEN_PROGRAM_ID }
+        );
+
+        const aioraAccount = tokenAccounts.value.find(
+          (account) => account.account.data.parsed.info.mint === AIORA_TOKEN_MINT.toString()
+        );
+
+        if (aioraAccount) {
+          const rawBalance = Number(aioraAccount.account.data.parsed.info.tokenAmount.amount);
+          const tokenBalance = rawBalance / Math.pow(10, 6);
+          console.log('Token balance:', tokenBalance);
+          setHasAccess(tokenBalance >= MIN_TOKEN_AMOUNT);
+        } else {
+          setHasAccess(false);
+        }
+      } catch (error) {
+        console.error("Error checking token balance:", error);
+        setHasAccess(false);
+      }
+      
+      setIsLoadingAccess(false);
+    };
+
+    checkTokenBalance();
+  }, [wallet.publicKey, connection]);
 
   const generateImage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,57 +122,81 @@ export default function ImageGen() {
 
           {/* Main Content */}
           <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
-            <div className="w-full max-w-4xl bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg p-8">
-              {/* Image Preview Area */}
-              <div className="flex flex-col items-center min-h-[240px] border border-white/20 rounded-lg p-4 mb-8">
-                {isLoading ? (
-                  <div className="animate-pulse text-white/50">Generating image...</div>
-                ) : generatedImage ? (
-                  <div className="flex flex-col items-center gap-4 animate-fade-scale-in">
-                    <img 
-                      src={generatedImage} 
-                      alt="Generated" 
-                      className="max-w-full h-auto rounded"
-                    />
-                    <a
-                      href={generatedImage}
-                      download="aiora-generated-image.png"
-                      className="flex items-center gap-2 border border-white/20 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      Download Image
-                    </a>
-                  </div>
-                ) : (
-                  <div className="text-white/50">Generated image will appear here</div>
-                )}
+            {isLoadingAccess ? (
+              <div className="flex items-center justify-center">
+                <div className="text-xl text-purple-400 animate-pulse">Loading Access Data...</div>
               </div>
-
-              {/* Prompt Input Form */}
-              <form onSubmit={generateImage}>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <input
-                    type="text"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Enter your prompt..."
-                    className="flex-1 bg-transparent border border-white/20 rounded-full px-6 py-3 focus:outline-none focus:border-white/50 transition-colors"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isLoading || !prompt}
-                    className={`border border-white rounded-full px-8 py-3 font-medium
-                      ${isLoading || !prompt 
-                        ? 'opacity-50 cursor-not-allowed' 
-                        : 'hover:bg-white/10 transition-colors'}`}
-                  >
-                    {isLoading ? 'Generating...' : 'Generate'}
-                  </button>
+            ) : !wallet.publicKey ? (
+              <div className="text-center max-w-2xl mx-auto p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">
+                <h2 className="text-2xl font-bold mb-4 text-purple-400">Connect Your Wallet</h2>
+                <p className="text-gray-300 mb-4">Please connect your Solana wallet to access AIORA Image Generation.</p>
+              </div>
+            ) : !hasAccess ? (
+              <div className="text-center max-w-2xl mx-auto p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">
+                <h2 className="text-2xl font-bold mb-4 text-purple-400">Access Restricted</h2>
+                <p className="text-gray-300 mb-4">You need at least 1,000,000 $AIORA tokens to access image generation.</p>
+                <a 
+                  href="https://raydium.io/swap/?inputCurrency=sol&outputCurrency=3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block px-6 py-3 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-colors"
+                >
+                  Get $AIORA Tokens
+                </a>
+              </div>
+            ) : (
+              <div className="w-full max-w-4xl bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg p-8">
+                {/* Image Preview Area */}
+                <div className="flex flex-col items-center min-h-[240px] border border-white/20 rounded-lg p-4 mb-8">
+                  {isLoading ? (
+                    <div className="animate-pulse text-white/50">Generating image...</div>
+                  ) : generatedImage ? (
+                    <div className="flex flex-col items-center gap-4 animate-fade-scale-in">
+                      <img 
+                        src={generatedImage} 
+                        alt="Generated" 
+                        className="max-w-full h-auto rounded"
+                      />
+                      <a
+                        href={generatedImage}
+                        download="aiora-generated-image.png"
+                        className="flex items-center gap-2 border border-white/20 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Download Image
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="text-white/50">Generated image will appear here</div>
+                  )}
                 </div>
-              </form>
-            </div>
+
+                {/* Prompt Input Form */}
+                <form onSubmit={generateImage}>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <input
+                      type="text"
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Enter your prompt..."
+                      className="flex-1 bg-transparent border border-white/20 rounded-full px-6 py-3 focus:outline-none focus:border-white/50 transition-colors"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isLoading || !prompt}
+                      className={`border border-white rounded-full px-8 py-3 font-medium
+                        ${isLoading || !prompt 
+                          ? 'opacity-50 cursor-not-allowed' 
+                          : 'hover:bg-white/10 transition-colors'}`}
+                    >
+                      {isLoading ? 'Generating...' : 'Generate'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       </div>
