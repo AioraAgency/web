@@ -6,6 +6,9 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
 import { ChatTerminal } from '../../components/ChatTerminal';
+import { AgentSelector, Agent } from '../../components/AgentSelector';
+import { AgentIntelligence } from '../../components/AgentIntelligence';
+import { TokenPrice } from '../../components/TokenPrice';
 
 export const IntelligenceView: FC = ({ }) => {
   const wallet = useWallet();
@@ -13,10 +16,33 @@ export const IntelligenceView: FC = ({ }) => {
   const balance = useUserSOLBalanceStore((s) => s.balance);
   const [hasAccess, setHasAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [isLoadingAgents, setIsLoadingAgents] = useState(true);
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
   const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+
+  // Fetch agents from API
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_AIORA_API_URL}agents`);
+        const data = await response.json();
+        setAgents(data.agents);
+        if (data.agents.length > 0) {
+          setSelectedAgent(data.agents[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching agents:", error);
+      } finally {
+        setIsLoadingAgents(false);
+      }
+    };
+
+    fetchAgents();
+  }, []);
 
   useEffect(() => {
     const checkTokenBalance = async () => {
@@ -38,8 +64,8 @@ export const IntelligenceView: FC = ({ }) => {
 
         if (aioraAccount) {
           const rawBalance = Number(aioraAccount.account.data.parsed.info.tokenAmount.amount);
-          const tokenBalance = rawBalance / Math.pow(10, 6); // Convert from raw amount to actual token amount
-          console.log('Token balance:', tokenBalance); // For debugging
+          const tokenBalance = rawBalance / Math.pow(10, 6);
+          console.log('Token balance:', tokenBalance);
           setHasAccess(tokenBalance >= MIN_TOKEN_AMOUNT);
         } else {
           setHasAccess(false);
@@ -54,6 +80,14 @@ export const IntelligenceView: FC = ({ }) => {
 
     checkTokenBalance();
   }, [wallet.publicKey, connection]);
+
+  // Get the current agent's token address
+  const getAgentTokenAddress = () => {
+    if (selectedAgent?.tokenAddress) {
+      return selectedAgent.tokenAddress;
+    }
+    return AIORA_TOKEN_MINT.toString();
+  };
 
   return (
     <div className="fixed inset-0 bg-black text-white overflow-hidden">
@@ -79,7 +113,17 @@ export const IntelligenceView: FC = ({ }) => {
             <Link href="/">
               <h1 className="text-2xl md:text-3xl font-bold cursor-pointer hover:text-purple-400 transition-colors">AIORA Intel</h1>
             </Link>
-            <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-4">
+              {hasAccess && !isLoadingAgents && selectedAgent && agents.length > 0 && (
+                <>
+                  <TokenPrice tokenAddress={getAgentTokenAddress()} />
+                  <AgentSelector
+                    agents={agents}
+                    selectedAgent={selectedAgent}
+                    onAgentChange={setSelectedAgent}
+                  />
+                </>
+              )}
               <WalletMultiButton className="bg-purple-500/20 hover:bg-purple-500/30 transition-colors" />
             </div>
           </div>
@@ -87,7 +131,7 @@ export const IntelligenceView: FC = ({ }) => {
 
         {/* Conditional Content Rendering */}
         <div className="p-4">
-          {isLoading ? (
+          {isLoading || isLoadingAgents ? (
             <div className="flex items-center justify-center h-[60vh]">
               <div className="text-xl text-purple-400 animate-pulse">Loading Intelligence Data...</div>
             </div>
@@ -109,98 +153,12 @@ export const IntelligenceView: FC = ({ }) => {
                 Get $AIORA Tokens
               </a>
             </div>
+          ) : selectedAgent ? (
+            <AgentIntelligence agent={selectedAgent} />
           ) : (
-            // Original grid content
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Original panels here */}
-              {/* Crypto Intelligence Panel */}
-              <div className="bg-navy-900/50 border border-blue-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 text-blue-400">Crypto Intelligence</h2>
-                <div className="space-y-4">
-                  {/* Price Chart */}
-                  <div className="bg-black/40 rounded-lg p-4 h-48">
-                    <div className="text-sm text-gray-400 mb-2">Price Action</div>
-                    {/* Add chart component here */}
-                  </div>
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">24h Volume</div>
-                      <div className="text-xl font-bold">$2.05M</div>
-                    </div>
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Holders</div>
-                      <div className="text-xl font-bold">2,218</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Social Intelligence Panel */}
-              <div className="bg-purple-900/50 border border-purple-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 text-purple-400">Social Intelligence</h2>
-                <div className="space-y-4">
-                  {/* Sentiment Graph */}
-                  <div className="bg-black/40 rounded-lg p-4 h-48">
-                    <div className="text-sm text-gray-400 mb-2">Sentiment Analysis</div>
-                    {/* Add sentiment chart here */}
-                  </div>
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Mentions</div>
-                      <div className="text-xl font-bold">95.4k</div>
-                    </div>
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Sentiment</div>
-                      <div className="text-xl font-bold text-green-400">+45%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Threat Intelligence Panel */}
-              <div className="bg-red-900/50 border border-red-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 text-red-400">Threat Intelligence</h2>
-                <div className="space-y-4">
-                  {/* Threat Map */}
-                  <div className="bg-black/40 rounded-lg p-4 h-48">
-                    <div className="text-sm text-gray-400 mb-2">Activity Monitor</div>
-                    {/* Add threat visualization here */}
-                  </div>
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Alerts</div>
-                      <div className="text-xl font-bold text-red-400">24</div>
-                    </div>
-                    <div className="bg-black/40 rounded-lg p-4">
-                      <div className="text-sm text-gray-400">Risk Level</div>
-                      <div className="text-xl font-bold">Medium</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activity Table */}
-              <div className="lg:col-span-3 bg-gray-900/50 border border-gray-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-gray-400 border-b border-gray-700">
-                        <th className="text-left p-2">Time</th>
-                        <th className="text-left p-2">Type</th>
-                        <th className="text-left p-2">Details</th>
-                        <th className="text-left p-2">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-300">
-                      {/* Add table rows here */}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            <div className="text-center max-w-2xl mx-auto mt-20 p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">
+              <h2 className="text-2xl font-bold mb-4 text-purple-400">No Agents Available</h2>
+              <p className="text-gray-300 mb-4">Unable to load intelligence agents. Please try again later.</p>
             </div>
           )}
         </div>
