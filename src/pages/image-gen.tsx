@@ -24,7 +24,7 @@ export default function ImageGen() {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
   const GENERATION_COST = 10 * Math.pow(10, 6); // 10 AIORA tokens (with 6 decimals)
   const TREASURY_WALLET = new PublicKey("8oZ7CYsHAEZ8Hni2GcYbgzyfPdkKX8MgH1nYGRhTYTBR");
 
