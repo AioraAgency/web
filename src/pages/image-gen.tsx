@@ -150,7 +150,7 @@ export default function ImageGen() {
 
       // Then generate image
       setLoadingStage('generating');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_AIORA_API_URL}agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
+      const response = await fetch(`/api/aiora-proxy?path=agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,9 +169,9 @@ export default function ImageGen() {
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
       setGeneratedImage(imageUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      setError('Failed to generate image. Please try again.');
+      setError(error.message || 'Failed to generate image. Please try again.');
     } finally {
       setIsLoading(false);
       setLoadingStage('idle');
