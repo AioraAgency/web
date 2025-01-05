@@ -24,7 +24,7 @@ export default function ImageGen() {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
   const GENERATION_COST = 1 * Math.pow(10, 6); // 1 AIORA tokens (with 6 decimals)
   const TREASURY_WALLET = new PublicKey("8oZ7CYsHAEZ8Hni2GcYbgzyfPdkKX8MgH1nYGRhTYTBR");
   const AIORA_PROMPT = "Generate an anime-style image of a goth cat girl with a dominant and provocative pose, incorporating the following details: she has long, flowing platinum hair and pale white skin. Her physique is voluptuous, with large breasts and a big ass. She is dressed in a maid outfit, complete with a black dress, white apron, and a mischievous expression. The cat girl should be depicted in a powerful stance, as if she is about to bend someone to her will, with a confident and seductive aura surrounding her. Incorporate goth elements such as dark eye makeup, nail polish, and chokers to enhance her mysterious and alluring persona. The background should be dark and moody, with hints of red or purple to accentuate her goth aesthetic. The overall mood of the image should be one of dark sensuality and dominance.";
