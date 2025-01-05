@@ -3,8 +3,13 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { 
+  TOKEN_PROGRAM_ID, 
+  createTransferInstruction, 
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
+import { PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 
 export default function ImageGen() {
   const wallet = useWallet();
@@ -14,10 +19,14 @@ export default function ImageGen() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [isLoadingAccess, setIsLoadingAccess] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingStage, setLoadingStage] = useState<'idle' | 'sending' | 'confirming' | 'generating'>('idle');
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
+  const GENERATION_COST = 10 * Math.pow(10, 6); // 10 AIORA tokens (with 6 decimals)
+  const TREASURY_WALLET = new PublicKey("8oZ7CYsHAEZ8Hni2GcYbgzyfPdkKX8MgH1nYGRhTYTBR");
 
   useEffect(() => {
     const checkTokenBalance = async () => {
@@ -56,11 +65,91 @@ export default function ImageGen() {
     checkTokenBalance();
   }, [wallet.publicKey, connection]);
 
+  const transferTokens = async (): Promise<boolean> => {
+    if (!wallet.publicKey || !wallet.signTransaction) {
+      setError("Wallet not connected");
+      return false;
+    }
+
+    try {
+      setLoadingStage('sending');
+      // Get the user's ATA (Associated Token Account)
+      const userATA = await getAssociatedTokenAddress(
+        AIORA_TOKEN_MINT,
+        wallet.publicKey
+      );
+
+      // Get the treasury's ATA
+      const treasuryATA = await getAssociatedTokenAddress(
+        AIORA_TOKEN_MINT,
+        TREASURY_WALLET
+      );
+
+      // Create a new transaction
+      const transaction = new Transaction();
+
+      // Check if treasury ATA exists
+      const treasuryAccount = await connection.getAccountInfo(treasuryATA);
+      
+      // If treasury ATA doesn't exist, add instruction to create it
+      if (!treasuryAccount) {
+        transaction.add(
+          createAssociatedTokenAccountInstruction(
+            wallet.publicKey, // payer
+            treasuryATA, // ata
+            TREASURY_WALLET, // owner
+            AIORA_TOKEN_MINT // mint
+          )
+        );
+      }
+
+      // Add transfer instruction
+      transaction.add(
+        createTransferInstruction(
+          userATA,
+          treasuryATA,
+          wallet.publicKey,
+          GENERATION_COST
+        )
+      );
+
+      // Set fee payer and recent blockhash
+      transaction.feePayer = wallet.publicKey;
+      transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+      // Sign and send transaction
+      const signedTx = await wallet.signTransaction(transaction);
+      const tx = await connection.sendRawTransaction(signedTx.serialize());
+      
+      setLoadingStage('confirming');
+      await connection.confirmTransaction(tx);
+
+      return true;
+    } catch (err: any) {
+      console.error("Error transferring tokens:", err);
+      setError(err.message || "Failed to transfer tokens. Please try again.");
+      setLoadingStage('idle');
+      return false;
+    }
+  };
+
   const generateImage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+    setLoadingStage('sending');
     
     try {
+      // First transfer tokens
+      const transferSuccess = await transferTokens();
+      if (!transferSuccess) {
+        setIsLoading(false);
+        setLoadingStage('idle');
+        return;
+      }
+
+      // Then generate image
+      setLoadingStage('generating');
       const response = await fetch(`${process.env.NEXT_PUBLIC_AIORA_API_URL}agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
         method: 'POST',
         headers: {
@@ -81,9 +170,24 @@ export default function ImageGen() {
       const imageUrl = URL.createObjectURL(blob);
       setGeneratedImage(imageUrl);
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error('Error:', error);
+      setError('Failed to generate image. Please try again.');
     } finally {
       setIsLoading(false);
+      setLoadingStage('idle');
+    }
+  };
+
+  const getLoadingMessage = () => {
+    switch (loadingStage) {
+      case 'sending':
+        return 'Sending transaction...';
+      case 'confirming':
+        return 'Waiting for transaction confirmation...';
+      case 'generating':
+        return 'Generating image...';
+      default:
+        return 'Loading...';
     }
   };
 
@@ -146,10 +250,21 @@ export default function ImageGen() {
               </div>
             ) : (
               <div className="w-full max-w-4xl bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg p-8">
+                {/* Cost Information */}
+                <div className="text-center mb-6 text-gray-400">
+                  Each image generation costs 10 $AIORA tokens
+                </div>
+
+                {error && (
+                  <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-center text-white">
+                    {error}
+                  </div>
+                )}
+
                 {/* Image Preview Area */}
                 <div className="flex flex-col items-center min-h-[240px] border border-white/20 rounded-lg p-4 mb-8">
                   {isLoading ? (
-                    <div className="animate-pulse text-white/50">Generating image...</div>
+                    <div className="animate-pulse text-white/50">{getLoadingMessage()}</div>
                   ) : generatedImage ? (
                     <div className="flex flex-col items-center gap-4 animate-fade-scale-in">
                       <img 
