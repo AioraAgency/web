@@ -24,7 +24,7 @@ export default function ImageGen() {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
   const GENERATION_COST = 10 * Math.pow(10, 6); // 10 AIORA tokens (with 6 decimals)
   const TREASURY_WALLET = new PublicKey("8oZ7CYsHAEZ8Hni2GcYbgzyfPdkKX8MgH1nYGRhTYTBR");
 
@@ -137,20 +137,11 @@ export default function ImageGen() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setLoadingStage('sending');
+    setLoadingStage('generating');
     
     try {
-      // First transfer tokens
-      const transferSuccess = await transferTokens();
-      if (!transferSuccess) {
-        setIsLoading(false);
-        setLoadingStage('idle');
-        return;
-      }
-
-      // Then generate image
-      setLoadingStage('generating');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_AIORA_API_URL}agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
+      // First try to validate the API is working and get the image
+      const validateResponse = await fetch(`/api/aiora-proxy?path=agents/dad53aba-bd70-05f9-8319-7bc6b4160812/chat-to-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,14 +155,28 @@ export default function ImageGen() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to generate image');
+      if (!validateResponse.ok) {
+        throw new Error('Image generation service is currently unavailable. Please try again later.');
+      }
 
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
+      // Store the image blob
+      const imageBlob = await validateResponse.blob();
+
+      // If API check passes, proceed with token transfer
+      setLoadingStage('sending');
+      const transferSuccess = await transferTokens();
+      if (!transferSuccess) {
+        setIsLoading(false);
+        setLoadingStage('idle');
+        return;
+      }
+
+      // Use the already generated image
+      const imageUrl = URL.createObjectURL(imageBlob);
       setGeneratedImage(imageUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      setError('Failed to generate image. Please try again.');
+      setError(error.message || 'Failed to generate image. Please try again.');
     } finally {
       setIsLoading(false);
       setLoadingStage('idle');
