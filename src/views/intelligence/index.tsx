@@ -23,7 +23,7 @@ export const IntelligenceView: FC = ({ }) => {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+  const MIN_TOKEN_AMOUNT = 1; // 1M tokens
 
   // Fetch agents from API
   useEffect(() => {
@@ -164,10 +164,7 @@ export const IntelligenceView: FC = ({ }) => {
             <div className="space-y-6">
               <AgentIntelligence agent={selectedAgent} />
               <ImagePrompts address="ACUw6da4YXw7N3BPXVV3XTAYpZ8ZF4zC2P69hyTZZU8u" />
-              <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-4">
-                <h2 className="text-sm font-medium text-purple-400 mb-4">Recent Activity</h2>
-                {/* Recent Activity Content */}
-              </div>
+              
             </div>
           ) : (
             <div className="text-center max-w-2xl mx-auto mt-20 p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">

@@ -168,7 +168,7 @@ export const ImagePrompts: FC<ImagePromptsProps> = ({ address }) => {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse text-purple-400">Loading gooner intelligence...</div>
+      <div className="text-purple-400/70">Loading gooner intelligence...</div>
     );
   }
 
