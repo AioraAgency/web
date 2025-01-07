@@ -21,6 +21,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.22",
     "@solana/web3.js": "^1.87.6",
     "@tailwindcss/typography": "^0.5.9",
+    "axios": "^1.7.9",
     "daisyui": "^1.24.3",
     "date-fns": "^2.29.3",
     "immer": "^9.0.12",

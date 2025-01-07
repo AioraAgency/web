@@ -31,20 +31,18 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
   };
 
   return (
-    <div className="relative flex items-center gap-2">
+    <div className="relative flex items-center gap-1.5">
       {/* Agent Image */}
-      <div className="w-8 h-8 relative flex-shrink-0">
+      <div className="w-6 h-6 sm:w-7 sm:h-7 relative flex-shrink-0">
         <Image
           src={selectedAgent.imagePath || getAgentImagePath(selectedAgent.name)}
           alt={selectedAgent.name}
-          width={32}
-          height={32}
+          width={28}
+          height={28}
           className="rounded-full object-cover"
           priority
         />
       </div>
-      
-      {/* Price will be inserted here by parent component */}
       
       {/* Selector */}
       <select
@@ -53,7 +51,7 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
           const agent = agents.find((a) => a.id === e.target.value);
           if (agent) onAgentChange(agent);
         }}
-        className="appearance-none bg-black/30 border border-white/10 text-white rounded-lg px-4 py-2 pr-8 hover:bg-black/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 backdrop-blur-sm"
+        className="appearance-none bg-black/30 border border-white/10 text-white rounded-lg text-[10px] sm:text-xs px-2 py-1 pr-6 hover:bg-black/40 focus:outline-none focus:ring-1 focus:ring-purple-500/50 backdrop-blur-sm"
       >
         {agents.map((agent) => (
           <option key={agent.id} value={agent.id}>
@@ -61,8 +59,8 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
           </option>
         ))}
       </select>
-      <div className="pointer-events-none absolute right-0 flex items-center px-2 text-white">
-        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+      <div className="pointer-events-none absolute right-0 flex items-center px-1.5 text-white">
+        <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
         </svg>
       </div>

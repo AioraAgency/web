@@ -88,7 +88,7 @@ export const TokenPrice: FC<TokenPriceProps> = ({ tokenAddress }) => {
 
   if (loading) {
     return (
-      <div className="text-sm text-purple-400/50 animate-pulse">
+      <div className="text-xs text-purple-400/50 animate-pulse">
         $0.00
       </div>
     );
@@ -103,24 +103,13 @@ export const TokenPrice: FC<TokenPriceProps> = ({ tokenAddress }) => {
   }
 
   return (
-    <div className="flex flex-col items-end leading-tight">
-      <div className="flex items-center gap-1">
-        <div className="text-sm font-medium text-purple-400">
-          ${tokenData?.price.toFixed(6)}
-        </div>
-        <span className="text-[10px] text-gray-400 font-medium">
-          {tokenData?.symbol}
-        </span>
+    <div className="flex items-center gap-1 text-[10px]">
+      <div className="font-medium text-purple-400">
+        ${tokenData?.price.toFixed(4)}
       </div>
-      <div className="flex items-center gap-1 text-[10px]">
-        <span className={`${tokenData?.priceChange1hPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
-          {tokenData?.priceChange1hPercent >= 0 ? '+' : ''}{tokenData?.priceChange1hPercent.toFixed(2)}% 1H
-        </span>
-        <span className="text-gray-500/50">|</span>
-        <span className={`${tokenData?.priceChange24hPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
-          {tokenData?.priceChange24hPercent >= 0 ? '+' : ''}{tokenData?.priceChange24hPercent.toFixed(2)}% 24H
-        </span>
-      </div>
+      <span className={`${tokenData?.priceChange24hPercent >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
+        {tokenData?.priceChange24hPercent >= 0 ? '+' : ''}{tokenData?.priceChange24hPercent.toFixed(1)}%
+      </span>
     </div>
   );
 }; 

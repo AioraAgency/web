@@ -9,6 +9,7 @@ import useUserSOLBalanceStore from '../../stores/useUserSOLBalanceStore';
 import { AgentSelector, Agent } from '../../components/AgentSelector';
 import { AgentIntelligence } from '../../components/AgentIntelligence';
 import { TokenPrice } from '../../components/TokenPrice';
+import { ImagePrompts } from '../../components/ImagePrompts';
 
 export const IntelligenceView: FC = ({ }) => {
   const wallet = useWallet();
@@ -108,23 +109,29 @@ export const IntelligenceView: FC = ({ }) => {
       {/* Content Container */}
       <div className="relative z-10 h-screen overflow-y-auto">
         {/* Header Section */}
-        <div className="sticky top-0 z-50 bg-black/50 backdrop-blur-sm border-b border-white/10 p-4">
-          <div className="flex justify-between items-center">
-            <Link href="/">
-              <h1 className="text-2xl md:text-3xl font-bold cursor-pointer hover:text-purple-400 transition-colors">AIORA Intel</h1>
+        <div className="sticky top-0 z-50 bg-black/50 backdrop-blur-sm border-b border-white/10 p-1.5">
+          <div className="flex items-center justify-between gap-1.5">
+            <Link href="/" className="shrink-0">
+              <h1 className="text-base sm:text-lg md:text-xl font-bold cursor-pointer hover:text-purple-400 transition-colors">AIORA Intel</h1>
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-[calc(100%-120px)] no-scrollbar">
               {hasAccess && !isLoadingAgents && selectedAgent && agents.length > 0 && (
                 <>
-                  <TokenPrice tokenAddress={getAgentTokenAddress()} />
-                  <AgentSelector
-                    agents={agents}
-                    selectedAgent={selectedAgent}
-                    onAgentChange={setSelectedAgent}
-                  />
+                  <div className="shrink-0">
+                    <TokenPrice tokenAddress={getAgentTokenAddress()} />
+                  </div>
+                  <div className="shrink-0">
+                    <AgentSelector
+                      agents={agents}
+                      selectedAgent={selectedAgent}
+                      onAgentChange={setSelectedAgent}
+                    />
+                  </div>
                 </>
               )}
-              <WalletMultiButton className="bg-purple-500/20 hover:bg-purple-500/30 transition-colors" />
+              <div className="shrink-0">
+                <WalletMultiButton className="!bg-purple-500/20 hover:!bg-purple-500/30 transition-colors !py-0.5 !px-2 !h-7 !text-xs !min-w-0" />
+              </div>
             </div>
           </div>
         </div>
@@ -154,7 +161,14 @@ export const IntelligenceView: FC = ({ }) => {
               </a>
             </div>
           ) : selectedAgent ? (
-            <AgentIntelligence agent={selectedAgent} />
+            <div className="space-y-6">
+              <AgentIntelligence agent={selectedAgent} />
+              <ImagePrompts address="ACUw6da4YXw7N3BPXVV3XTAYpZ8ZF4zC2P69hyTZZU8u" />
+              <div className="bg-black/40 backdrop-blur-sm rounded-lg border border-white/10 p-4">
+                <h2 className="text-sm font-medium text-purple-400 mb-4">Recent Activity</h2>
+                {/* Recent Activity Content */}
+              </div>
+            </div>
           ) : (
             <div className="text-center max-w-2xl mx-auto mt-20 p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">
               <h2 className="text-2xl font-bold mb-4 text-purple-400">No Agents Available</h2>
