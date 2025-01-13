@@ -23,7 +23,12 @@ export const IntelligenceView: FC = ({ }) => {
 
   // AIORA token mint address
   const AIORA_TOKEN_MINT = new PublicKey("3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump");
-  const MIN_TOKEN_AMOUNT = 1000000; // 1M tokens
+  const DEGEN_TOKEN_MINT = new PublicKey("Gu3LDkn7Vx3bmCzLafYNKcDxv2mH7YN44NJZFXnypump");
+  const AI16Z_TOKEN_MINT = new PublicKey("HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC");
+  
+  const MIN_AIORA_AMOUNT = 1000000; // 1M tokens
+  const MIN_DEGEN_AMOUNT = 1000000; // 1M tokens
+  const MIN_AI16Z_AMOUNT = 100000; // 100K tokens
 
   // Fetch agents from API
   useEffect(() => {
@@ -59,20 +64,48 @@ export const IntelligenceView: FC = ({ }) => {
           { programId: TOKEN_PROGRAM_ID }
         );
 
+        // Check AIORA balance
         const aioraAccount = tokenAccounts.value.find(
           (account) => account.account.data.parsed.info.mint === AIORA_TOKEN_MINT.toString()
         );
 
-        if (aioraAccount) {
-          const rawBalance = Number(aioraAccount.account.data.parsed.info.tokenAmount.amount);
-          const tokenBalance = rawBalance / Math.pow(10, 6);
-          console.log('Token balance:', tokenBalance);
-          setHasAccess(tokenBalance >= MIN_TOKEN_AMOUNT);
-        } else {
-          setHasAccess(false);
-        }
+        // Check DEGEN balance
+        const degenAccount = tokenAccounts.value.find(
+          (account) => account.account.data.parsed.info.mint === DEGEN_TOKEN_MINT.toString()
+        );
+
+        // Check AI16Z balance
+        const ai16zAccount = tokenAccounts.value.find(
+          (account) => account.account.data.parsed.info.mint === AI16Z_TOKEN_MINT.toString()
+        );
+
+        // Calculate balances
+        const aioraBalance = aioraAccount 
+          ? Number(aioraAccount.account.data.parsed.info.tokenAmount.amount) / Math.pow(10, 6)
+          : 0;
+
+        const degenBalance = degenAccount
+          ? Number(degenAccount.account.data.parsed.info.tokenAmount.amount) / Math.pow(10, 6)
+          : 0;
+
+        const ai16zBalance = ai16zAccount
+          ? Number(ai16zAccount.account.data.parsed.info.tokenAmount.amount) / Math.pow(10, 6)
+          : 0;
+
+        console.log('Token balances:', {
+          AIORA: aioraBalance,
+          DEGEN: degenBalance,
+          AI16Z: ai16zBalance
+        });
+
+        // Check if any of the token conditions are met
+        setHasAccess(
+          aioraBalance >= MIN_AIORA_AMOUNT ||
+          degenBalance >= MIN_DEGEN_AMOUNT ||
+          ai16zBalance >= MIN_AI16Z_AMOUNT
+        );
       } catch (error) {
-        console.error("Error checking token balance:", error);
+        console.error("Error checking token balances:", error);
         setHasAccess(false);
       }
       
@@ -150,15 +183,22 @@ export const IntelligenceView: FC = ({ }) => {
           ) : !hasAccess ? (
             <div className="text-center max-w-2xl mx-auto mt-20 p-6 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg">
               <h2 className="text-2xl font-bold mb-4 text-purple-400">Access Restricted</h2>
-              <p className="text-gray-300 mb-4">You need at least 1,000,000 $AIORA tokens to access intelligence data.</p>
-              <a 
-                href="https://raydium.io/swap/?inputCurrency=sol&outputCurrency=3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block px-6 py-3 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-colors"
-              >
-                Get $AIORA Tokens
-              </a>
+              <p className="text-gray-300 mb-4">
+                You need one of the following to access intelligence data:
+                <br/>• 1,000,000 $AIORA tokens
+                <br/>• 1,000,000 $DEGEN tokens
+                <br/>• 100,000 $AI16Z tokens
+              </p>
+              <div className="space-y-2">
+                <a 
+                  href="https://raydium.io/swap/?inputCurrency=sol&outputCurrency=3Vh9jur61nKnKzf6HXvVpEsYaLrrSEDpSgfMSS3Bpump" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block px-6 py-3 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-colors"
+                >
+                  Get $AIORA Tokens
+                </a>
+              </div>
             </div>
           ) : selectedAgent ? (
             <div className="space-y-6">
