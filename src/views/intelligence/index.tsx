@@ -147,7 +147,7 @@ export const IntelligenceView: FC = ({ }) => {
             <Link href="/" className="shrink-0">
               <h1 className="text-base sm:text-lg md:text-xl font-bold cursor-pointer hover:text-purple-400 transition-colors">AIORA Intel</h1>
             </Link>
-            <div className="flex items-center gap-1.5 overflow-x-auto max-w-[calc(100%-120px)] no-scrollbar">
+            <div className="flex items-center gap-1.5 overflow-hidden max-w-[calc(100%-120px)]">
               {hasAccess && !isLoadingAgents && selectedAgent && agents.length > 0 && (
                 <>
                   <div className="shrink-0">
